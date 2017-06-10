@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	Window window;
 	GraphicsHandler gHandler;
 
-	window.setupWindow(200, 200);
+	window.setupWindow(1280, 720);
 	gHandler.setup3DContent();
 
 	window.run(&gHandler);

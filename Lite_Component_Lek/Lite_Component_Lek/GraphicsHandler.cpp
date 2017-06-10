@@ -76,11 +76,22 @@ void GraphicsHandler::clear()
 	this->mContext->ClearRenderTargetView(this->mBackBufferRTV, clearColor);
 }
 
-void GraphicsHandler::render()
+void GraphicsHandler::render(Entity* entity)
 {
+
 }
 
 void GraphicsHandler::present()
 {
 	this->mSwapChain->Present(0, 0);
+}
+
+ID3D11Device* GraphicsHandler::getDevice()
+{
+	return this->mDevice;
+}
+
+ID3D11DeviceContext* GraphicsHandler::getDeviceContext()
+{
+	return this->mContext;
 }

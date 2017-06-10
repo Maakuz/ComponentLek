@@ -2,10 +2,8 @@
 #define GRAPHICSHANDLER_H
 
 #include "SDL.h"
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#pragma comment (lib, "d3d11.lib")
-#pragma comment (lib, "d3dcompiler.lib")
+#include "D3DHeader.h"
+#include "Entity.h"
 
 class GraphicsHandler 
 {
@@ -23,9 +21,11 @@ public:
 	HRESULT setup3DContent();
 
 	void clear();
-	void render();
+	void render(Entity* entity);
 	void present();
 
+	ID3D11Device* getDevice();
+	ID3D11DeviceContext* getDeviceContext();
 };
 
 #endif
