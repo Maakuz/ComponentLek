@@ -14,13 +14,15 @@ class Mesh : public Component
 {
 private:
 	ID3D11Buffer* mVertexBuffer;
+	int mNrOfVertices;
 
 public:
 	Mesh();
-	~Mesh();
+	virtual ~Mesh();
 
 	bool loadMesh(std::vector<Vertex> vertices, ID3D11Device* device);
 
 	ID3D11Buffer* getBuffer();
+	int getNrOfVertices() const;
 };
 #endif

@@ -3,6 +3,8 @@
 Game::Game(GraphicsHandler* gHandler)
 {
 	this->mGraphicsHandler = gHandler;
+	gHandler->setupShaders();
+	gHandler->setupView(1280, 720);
 	Entity* test = new Entity;
 	Mesh* mesh = new Mesh;
 

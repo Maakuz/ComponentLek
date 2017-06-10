@@ -28,10 +28,17 @@ bool Mesh::loadMesh(std::vector<Vertex> vertices, ID3D11Device* device)
 	if (FAILED(hr))
 		return false;
 
+	this->mNrOfVertices = vertices.size();
+
 	return true;
 }
 
 ID3D11Buffer* Mesh::getBuffer()
 {
 	return this->mVertexBuffer;
+}
+
+int Mesh::getNrOfVertices() const
+{
+	return this->mNrOfVertices;
 }

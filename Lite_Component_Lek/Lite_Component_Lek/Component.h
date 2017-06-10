@@ -3,6 +3,7 @@
 
 enum ComponentID
 {
+	camera = 0,
 	mesh = 1
 };
 

@@ -2,8 +2,8 @@
 #define GRAPHICSHANDLER_H
 
 #include "SDL.h"
-#include "D3DHeader.h"
 #include "Entity.h"
+#include "ShaderHandler.h"
 
 class GraphicsHandler 
 {
@@ -13,12 +13,20 @@ private:
 	ID3D11DeviceContext* mContext;
 	ID3D11RenderTargetView* mBackBufferRTV;
 	ID3D11Debug* mDebugDevice;
+	D3D11_VIEWPORT mView;
+
+	ShaderHandler mShaderHandler;
+
+	struct shaderSetup { int vs; int gs; int ps; };
+	shaderSetup mEntitySetup;
 
 public:
 	GraphicsHandler();
 	virtual ~GraphicsHandler();
 
 	HRESULT setup3DContent();
+	void setupShaders();
+	void setupView(int width, int height);
 
 	void clear();
 	void render(Entity* entity);

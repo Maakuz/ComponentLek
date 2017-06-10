@@ -18,12 +18,12 @@ GraphicsHandler::~GraphicsHandler()
 
 
 
-
 	//this->mDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 	this->mDebugDevice->Release();
 }
 
-HRESULT GraphicsHandler::setup3DContent() {
+HRESULT GraphicsHandler::setup3DContent()
+{
 	DXGI_SWAP_CHAIN_DESC mSwapChainDesc;
 	ZeroMemory(&mSwapChainDesc, sizeof(mSwapChainDesc));
 	mSwapChainDesc.BufferCount = 1;
@@ -70,6 +70,35 @@ HRESULT GraphicsHandler::setup3DContent() {
 	return hr;
 }
 
+void GraphicsHandler::setupShaders()
+{
+	D3D11_INPUT_ELEMENT_DESC desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	mEntitySetup.vs = mShaderHandler.setupVertexShader(this->mDevice, L"VertexShader.hlsl", "main", desc, ARRAYSIZE(desc));
+	if (mEntitySetup.vs == -1)
+		exit(-2);
+
+	mEntitySetup.gs = -1;
+
+	mEntitySetup.ps = mShaderHandler.setupPixelShader(this->mDevice, L"PixelShader.hlsl", "main");
+	if (mEntitySetup.ps == -1)
+		exit(-3);
+}
+
+void GraphicsHandler::setupView(int width, int height)
+{
+	this->mView.Height = height;
+	this->mView.Width = width;
+	this->mView.MaxDepth = 1.f;
+	this->mView.MinDepth = 0.f;
+	this->mView.TopLeftX = 0;
+	this->mView.TopLeftY = 0;
+}
+
 void GraphicsHandler::clear()
 {
 	float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -78,7 +107,18 @@ void GraphicsHandler::clear()
 
 void GraphicsHandler::render(Entity* entity)
 {
+	this->mShaderHandler.setShaders(this->mEntitySetup.vs, this->mEntitySetup.gs, this->mEntitySetup.ps, this->mContext);
 
+	Mesh* mesh = dynamic_cast<Mesh*>(entity->getComponent(ComponentID::mesh));
+	ID3D11Buffer* temp = mesh->getBuffer();
+
+	UINT stride = sizeof(Vertex), offset = 0;
+
+	this->mContext->RSSetViewports(1, &this->mView);
+	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, nullptr);
+	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	this->mContext->IASetVertexBuffers(0, 1, &temp, &stride, &offset);
+	this->mContext->Draw(mesh->getNrOfVertices(), 0);
 }
 
 void GraphicsHandler::present()
