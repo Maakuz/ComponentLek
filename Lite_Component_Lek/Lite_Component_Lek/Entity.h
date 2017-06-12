@@ -1,6 +1,7 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 #include "Mesh.h"
+#include <assert.h>
 #include <map>
 
 class Entity

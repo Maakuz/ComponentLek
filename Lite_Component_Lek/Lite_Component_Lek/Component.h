@@ -4,7 +4,11 @@
 enum ComponentID
 {
 	camera = 0,
-	mesh = 1
+	mesh = 1,
+	position = 2,
+	velocity = 3,
+	keyboardInput = 4,
+	transformBuffer = 5
 };
 
 class Component

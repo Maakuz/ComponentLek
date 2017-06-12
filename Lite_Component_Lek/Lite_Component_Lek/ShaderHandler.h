@@ -21,6 +21,10 @@ public:
 	int setupPixelShader(ID3D11Device* device, wchar_t* name, char* entrypoint);
 
 	void setShaders(int vs, int gs, int ps, ID3D11DeviceContext* context);
+	void setVS(int vs, ID3D11DeviceContext* context);
+	void setGS(int gs, ID3D11DeviceContext* context);
+	void setPS(int ps, ID3D11DeviceContext* context);
+
 };
 
 #endif

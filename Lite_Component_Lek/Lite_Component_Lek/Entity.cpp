@@ -28,5 +28,15 @@ bool Entity::hasComponent(int id)
 
 void Entity::addComponent(Component* component)
 {
+	if (component->getId() == ComponentID::camera)
+		assert(this->hasComponent(ComponentID::position));
+
+	if (component->getId() == ComponentID::velocity)
+		assert(this->hasComponent(ComponentID::position));
+
+	if (component->getId() == ComponentID::keyboardInput)
+		assert(this->hasComponent(ComponentID::velocity));
+
+
 	this->mComponents[component->getId()] = component;
 }

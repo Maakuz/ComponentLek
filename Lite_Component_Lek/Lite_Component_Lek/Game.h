@@ -3,6 +3,11 @@
 #include "GraphicsHandler.h"
 #include "SimpleMath.h"
 #include "Entity.h"
+#include "Camera.h"
+#include "Velocity.h"
+#include "Position.h"
+#include "KeyboardMovement.h"
+#include "TransformBuffer.h"
 
 class Game
 {
@@ -18,7 +23,10 @@ public:
 	void update(float deltaTime);
 	void draw();
 
-	std::vector<Vertex> createCube();
+	void handleKeyPress(SDL_KeyboardEvent const &key);
+	void handleKeyRelease(SDL_KeyboardEvent const &key);
+
+	std::vector<Vertex> createCube(float r, float g, float b);
 };
 
 #endif

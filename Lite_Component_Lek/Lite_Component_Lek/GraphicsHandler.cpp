@@ -82,6 +82,10 @@ void GraphicsHandler::setupShaders()
 	if (mEntitySetup.vs == -1)
 		exit(-2);
 
+	mEntitySetup.vsTransform = mShaderHandler.setupVertexShader(this->mDevice, L"VertexShaderTransform.hlsl", "main", desc, ARRAYSIZE(desc));
+	if (mEntitySetup.vsTransform == -1)
+		exit(-2);
+
 	mEntitySetup.gs = -1;
 
 	mEntitySetup.ps = mShaderHandler.setupPixelShader(this->mDevice, L"PixelShader.hlsl", "main");
@@ -99,6 +103,11 @@ void GraphicsHandler::setupView(int width, int height)
 	this->mView.TopLeftY = 0;
 }
 
+void GraphicsHandler::setVP(ID3D11Buffer* vp)
+{
+	this->mContext->VSSetConstantBuffers(0, 1, &vp);
+}
+
 void GraphicsHandler::clear()
 {
 	float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -113,6 +122,14 @@ void GraphicsHandler::render(Entity* entity)
 	ID3D11Buffer* temp = mesh->getBuffer();
 
 	UINT stride = sizeof(Vertex), offset = 0;
+
+	if (entity->hasComponent(ComponentID::transformBuffer))
+	{
+		TransformBuffer* transform = dynamic_cast<TransformBuffer*>(entity->getComponent(ComponentID::transformBuffer));
+		ID3D11Buffer* temp2 = transform->getBuffer();
+		this->mContext->VSSetConstantBuffers(1, 1, &temp2);
+		this->mShaderHandler.setVS(this->mEntitySetup.vsTransform, this->mContext);
+	}
 
 	this->mContext->RSSetViewports(1, &this->mView);
 	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, nullptr);

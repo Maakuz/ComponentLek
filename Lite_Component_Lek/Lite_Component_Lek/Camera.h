@@ -1,13 +1,13 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 #include "Component.h"
-#include "SimpleMath.h"
 #include "D3DHeader.h"
+#include "SimpleMath.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-struct VP
+struct VPStruct
 {
 	DirectX::SimpleMath::Matrix view;
 	DirectX::SimpleMath::Matrix projection;
@@ -23,15 +23,28 @@ private:
 
 	float mPitch;
 	float mYaw;
-	VP mVP;
+	VPStruct mVP;
 
 	ID3D11Buffer* mVPBuffer;
 
 public:
-	Camera(int width, int height);
+	Camera(int width = 0, int height = 0);
 	~Camera();
 
+	void updateCamera(ID3D11DeviceContext* context);
+	ID3D11Buffer* getBuffer();
 
+	HRESULT setupBuffer(ID3D11Device* device);
+
+	void setForward(DirectX::SimpleMath::Vector3 forward);
+	void setUp(DirectX::SimpleMath::Vector3 up);
+	void setRight(DirectX::SimpleMath::Vector3 right);
+	void setPos(DirectX::SimpleMath::Vector3 pos);
+
+	DirectX::SimpleMath::Vector3 getForward() const;
+	DirectX::SimpleMath::Vector3 getUp() const;
+	DirectX::SimpleMath::Vector3 getRight() const;
+	DirectX::SimpleMath::Vector3 getPos() const;
 };
 
 #endif

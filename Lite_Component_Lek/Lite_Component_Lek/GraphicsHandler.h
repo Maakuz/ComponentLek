@@ -4,6 +4,7 @@
 #include "SDL.h"
 #include "Entity.h"
 #include "ShaderHandler.h"
+#include "TransformBuffer.h"
 
 class GraphicsHandler 
 {
@@ -17,7 +18,7 @@ private:
 
 	ShaderHandler mShaderHandler;
 
-	struct shaderSetup { int vs; int gs; int ps; };
+	struct shaderSetup { int vs; int vsTransform; int gs; int ps; };
 	shaderSetup mEntitySetup;
 
 public:
@@ -27,6 +28,7 @@ public:
 	HRESULT setup3DContent();
 	void setupShaders();
 	void setupView(int width, int height);
+	void setVP(ID3D11Buffer* vp);
 
 	void clear();
 	void render(Entity* entity);

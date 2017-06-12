@@ -107,3 +107,19 @@ void ShaderHandler::setShaders(int vs, int gs, int ps, ID3D11DeviceContext* cont
 	context->GSSetShader(gs == -1 ? nullptr : this->mGeometryShaders[gs], nullptr, 0);
 	context->PSSetShader(ps == -1 ? nullptr : this->mPixelShaders[ps], nullptr, 0);
 }
+
+void ShaderHandler::setVS(int vs, ID3D11DeviceContext* context)
+{
+	context->VSSetShader(vs == -1 ? nullptr : this->mVertexShaders[vs], nullptr, 0);
+	context->IASetInputLayout(vs == -1 ? nullptr : this->mInputLayout[vs]);
+}
+
+void ShaderHandler::setGS(int gs, ID3D11DeviceContext* context)
+{
+	context->GSSetShader(gs == -1 ? nullptr : this->mGeometryShaders[gs], nullptr, 0);
+}
+
+void ShaderHandler::setPS(int ps, ID3D11DeviceContext* context)
+{
+	context->PSSetShader(ps == -1 ? nullptr : this->mPixelShaders[ps], nullptr, 0);
+}

@@ -5,14 +5,46 @@ Game::Game(GraphicsHandler* gHandler)
 	this->mGraphicsHandler = gHandler;
 	gHandler->setupShaders();
 	gHandler->setupView(1280, 720);
-	Entity* test = new Entity;
+	Entity* entity = new Entity;
+	Entity* cameraEntity = new Entity;
+
+
+	entity->addComponent(new Position());
+	
 	Mesh* mesh = new Mesh;
+	mesh->loadMesh(createCube(0, 1, 1), gHandler->getDevice());
 
-	mesh->loadMesh(createCube(), gHandler->getDevice());
+	Velocity* vel = new Velocity(0.97f);
 
-	test->addComponent(mesh);
+	Camera* cameraCom = new Camera(1280, 720);
+	cameraCom->setupBuffer(this->mGraphicsHandler->getDevice());
 
-	mEntities.push_back(test);
+	Position* pos = new Position();
+	pos->setPosition(DirectX::SimpleMath::Vector3(-10, 0, 0));
+
+	TransformBuffer* transform = new TransformBuffer;
+	transform->setupBuffer(this->mGraphicsHandler->getDevice());
+
+	entity->addComponent(transform);
+	entity->addComponent(mesh);
+
+	cameraEntity->addComponent(pos);
+	cameraEntity->addComponent(cameraCom);
+
+	entity->addComponent(vel);
+
+	entity->addComponent(new KeyboardMovement(0.001f));
+	
+
+	mEntities.push_back(entity);
+
+
+	
+
+	
+	
+	mEntities.push_back(cameraEntity);
+
 }
 
 Game::~Game()
@@ -25,11 +57,62 @@ Game::~Game()
 
 void Game::update(float deltaTime)
 {
+	for (int i = 0; i < this->mEntities.size(); i++)
+	{
+		if (this->mEntities[i]->hasComponent(ComponentID::velocity))
+		{
+			Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
+			Velocity* vel = dynamic_cast<Velocity*>(this->mEntities[i]->getComponent(ComponentID::velocity));
+			
+			if (this->mEntities[i]->hasComponent(ComponentID::keyboardInput))
+			{
+				KeyboardMovement* km = dynamic_cast<KeyboardMovement*>(this->mEntities[i]->getComponent(ComponentID::keyboardInput));
+				vel->addVelocity(km->getSpeed());
+			}
+
+
+			vel->applyFriction();
+
+			pos->move(vel->getVelocity());
+		}
+
+		if (this->mEntities[i]->hasComponent(ComponentID::camera))
+		{
+			Camera* cam = dynamic_cast<Camera*>(this->mEntities[i]->getComponent(ComponentID::camera));
+			cam->setPos(dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position))->getPosition());
+			cam->updateCamera(this->mGraphicsHandler->getDeviceContext());
+		}
+
+		if (this->mEntities[i]->hasComponent(ComponentID::transformBuffer))
+		{
+			TransformBuffer* buffer = dynamic_cast<TransformBuffer*>(this->mEntities[i]->getComponent(ComponentID::transformBuffer));
+			buffer->resetMatrix();
+			//rotation before pos
+
+			if (this->mEntities[i]->hasComponent(ComponentID::position))
+			{
+				Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
+				buffer->multiplyCurrent(pos->getTransformMatrix());
+			}
+			
+			buffer->updateBuffer(this->mGraphicsHandler->getDeviceContext());
+		}
+
+	}
 }
 
 void Game::draw()
 {
 	this->mGraphicsHandler->clear();
+
+	for (int i = 0; i < this->mEntities.size(); i++)
+	{
+		if (this->mEntities[i]->hasComponent(ComponentID::camera))
+		{
+			Camera* cam = dynamic_cast<Camera*>(this->mEntities[i]->getComponent(ComponentID::camera));
+			this->mGraphicsHandler->setVP(cam->getBuffer());
+		}
+	}
 
 	for (int i = 0; i < this->mEntities.size(); i++)
 	{
@@ -40,136 +123,161 @@ void Game::draw()
 	this->mGraphicsHandler->present();
 }
 
-std::vector<Vertex> Game::createCube()
+void Game::handleKeyPress(SDL_KeyboardEvent const& key)
+{
+	for (int i = 0; i < this->mEntities.size(); i++)
+	{
+		if (this->mEntities[i]->hasComponent(ComponentID::keyboardInput))
+		{
+			KeyboardMovement* km = dynamic_cast<KeyboardMovement*>(this->mEntities[i]->getComponent(ComponentID::keyboardInput));
+			Velocity* vel = dynamic_cast<Velocity*>(this->mEntities[i]->getComponent(ComponentID::velocity));
+			km->handleKeyPress(key);
+		}
+	}
+}
+
+void Game::handleKeyRelease(SDL_KeyboardEvent const& key)
+{
+	for (int i = 0; i < this->mEntities.size(); i++)
+	{
+		if (this->mEntities[i]->hasComponent(ComponentID::keyboardInput))
+		{
+			KeyboardMovement* km = dynamic_cast<KeyboardMovement*>(this->mEntities[i]->getComponent(ComponentID::keyboardInput));
+			km->handleKeyRelease(key);
+		}
+	}
+}
+
+std::vector<Vertex> Game::createCube(float r, float g, float b)
 {
 	using namespace DirectX::SimpleMath;
 	//this was very annoying, it better be right.
 	Vertex cube[]
 	{
 		//front
-		-1, -1, -1,
-		1, 1, 1,
-
 		1, 1, -1,
-		1, 1, 1,
+		r, g, b,
+		
+		-1, -1, -1,
+		r, g, b,
 
 		-1, 1, -1,
-		1, 1, 1,
+		r, g, b,
 
-
-		1, 1, -1,
-		1, 1, 1,
 
 		-1, -1, -1,
-		1, 1, 1,
+		r, g, b,
+
+		1, 1, -1,
+		r, g, b,
 
 		1, -1, -1,
-		1, 1, 1,
+		r, g, b,
 
 		//back
-		-1, -1, 1,
 		1, 1, 1,
+		r, g, b,
 
-		1, 1, 1,
-		1, 1, 1,
+		-1, -1, 1,
+		r, g, b,
 
 		1, -1, 1,
-		1, 1, 1,
+		r, g, b,
 
 
-
-		1, 1, 1,
-		1, 1, 1,
 		
 		-1, -1, 1,
+		r, g, b,
+
 		1, 1, 1,
+		r, g, b,
 		
 		-1, 1, 1,
-		1, 1, 1,
+		r, g, b,
 
 		//top
-		-1, 1, -1,
 		1, 1, 1,
+		r, g, b,
 
-		1, 1, 1,
-		1, 1, 1,
+		-1, 1, -1,
+		r, g, b,
 		
 		-1, 1, 1,
-		1, 1, 1,
+		r, g, b,
 
 
-
-		1, 1, 1,
-		1, 1, 1,
 		
 		-1, 1, -1,
+		r, g, b,
+
 		1, 1, 1,
+		r, g, b,
 		
 		1, 1, -1,
-		1, 1, 1,
+		r, g, b,
 
 		//bottom
-		-1, -1, -1,
-		1, 1, 1,
-
 		1, -1, 1,
-		1, 1, 1,
+		r, g, b,
+
+		-1, -1, -1,
+		r, g, b,
 		
 		1, -1, -1,
-		1, 1, 1,
+		r, g, b,
 
 
+		 
+		-1, -1, -1,
+		r, g, b,
 
 		1, -1, 1,
-		1, 1, 1,
-		
-		-1, -1, -1,
-		1, 1, 1,
+		r, g, b,
 		
 		-1, -1, 1,
-		1, 1, 1,
-
+		r, g, b,
+		 
 		//Left
-		-1, -1, 1,
-		1, 1, 1,
-		
 		-1, 1, -1,
-		1, 1, 1,
-		
+		r, g, b,
+
+		-1, -1, 1,
+		r, g, b,
+
 		-1, 1, 1,
-		1, 1, 1,
+		r, g, b,
 
 
-
-		-1, 1, -1,
-		1, 1, 1,
 		
 		-1, -1, 1,
-		1, 1, 1,
+		r, g, b,
+
+		-1, 1, -1,
+		r, g, b,
 		
 		-1, -1, -1,
-		1, 1, 1,
+		r, g, b,
 
 		//Right
+		1, 1, 1,
+		r, g, b,
+
 		1, -1, -1,
-		1, 1, 1,
-		
-		1, 1, 1,
-		1, 1, 1, 
-			
+		r, g, b,
+
 		1, 1, -1,
-		1, 1, 1,
+		r, g, b,
 
 
-
-		1, 1, 1,
-		1, 1, 1,
 
 		1, -1, -1,
+		r, g, b,
+
 		1, 1, 1,
+		r, g, b,
 
 		1, -1, 1,
-		1, 1, 1
+		r, g, b,
 	};
 
 	std::vector<Vertex> cubeVec;

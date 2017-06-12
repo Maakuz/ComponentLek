@@ -25,8 +25,21 @@ void Window::run(GraphicsHandler* gHandler)
 	{
 		while (SDL_PollEvent(&e) != 0)
 		{
-			if (e.type == SDL_QUIT)
+			switch (e.type)
+			{
+			case SDL_QUIT:
 				quit = true;
+				break;
+
+			case SDL_KEYDOWN:
+				game.handleKeyPress(e.key);
+				break;
+
+			case SDL_KEYUP:
+				game.handleKeyRelease(e.key);
+				break;
+			}
+			
 		}
 
 		//TODO: UPDATE
@@ -53,7 +66,7 @@ void Window::setupWindow(int width, int height)
 
 	this->mWindow = SDL_CreateWindow(
 		"Title",
-		300,
+		200,
 		100,
 		width,
 		height,
