@@ -4,6 +4,7 @@ Game::Game(GraphicsHandler* gHandler)
 {
 	this->mGraphicsHandler = gHandler;
 	gHandler->setupShaders();
+	gHandler->setupLightHandler();
 	gHandler->setupView(1280, 720);
 	Entity* entity = new Entity;
 	Entity* cameraEntity = new Entity;
@@ -12,7 +13,15 @@ Game::Game(GraphicsHandler* gHandler)
 	entity->addComponent(new Position());
 	
 	Mesh* mesh = new Mesh;
-	mesh->loadMesh(createCube(0, 1, 1), gHandler->getDevice());
+	std::vector<Vertex> meshVec;
+	for (int i = 0; i < 10; i++)
+	{
+		std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 0.5f + (i * 2));
+
+		meshVec.insert(meshVec.end(), vec.begin(), vec.end());
+	}
+
+	mesh->loadMesh(meshVec, gHandler->getDevice());
 
 	Velocity* vel = new Velocity(0.97f);
 
@@ -20,7 +29,7 @@ Game::Game(GraphicsHandler* gHandler)
 	cameraCom->setupBuffer(this->mGraphicsHandler->getDevice());
 
 	Position* pos = new Position();
-	pos->setPosition(DirectX::SimpleMath::Vector3(-10, 0, 0));
+	pos->setPosition(DirectX::SimpleMath::Vector3(-10, 10, 0));
 
 	TransformBuffer* transform = new TransformBuffer;
 	transform->setupBuffer(this->mGraphicsHandler->getDevice());
@@ -34,7 +43,9 @@ Game::Game(GraphicsHandler* gHandler)
 	entity->addComponent(vel);
 
 	entity->addComponent(new KeyboardMovement(0.001f));
-	
+
+	this->AddDirLight(entity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
+	this->AddDirLight(cameraEntity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
 
 	mEntities.push_back(entity);
 
@@ -148,135 +159,177 @@ void Game::handleKeyRelease(SDL_KeyboardEvent const& key)
 	}
 }
 
-std::vector<Vertex> Game::createCube(float r, float g, float b)
+void Game::AddDirLight(Entity* entity, DirectionalLight* dirLight)
+{
+	entity->addComponent(dirLight);
+	this->mGraphicsHandler->getLightHandler()->addDirectionalLight(dirLight);
+}
+
+std::vector<Vertex> Game::createCube(float r, float g, float b, float x, float y, float z)
 {
 	using namespace DirectX::SimpleMath;
 	//this was very annoying, it better be right.
 	Vertex cube[]
 	{
 		//front
-		1, 1, -1,
+		x + 1, y + 1, z + -1,
+		0, 0, 1,
 		r, g, b,
 		
-		-1, -1, -1,
+		x + -1, y + -1, z + -1,
+		0, 0, 1,
 		r, g, b,
 
-		-1, 1, -1,
+		x + -1, y + 1, z + -1,
+		0, 0, 1,
 		r, g, b,
 
 
-		-1, -1, -1,
+		x + -1, y + -1, z + -1,
+		0, 0, 1,
 		r, g, b,
 
-		1, 1, -1,
+		x + 1, y + 1, z + -1,
+		0, 0, 1,
 		r, g, b,
 
-		1, -1, -1,
+		x + 1, y + -1, z + -1,
+		0, 0, 1,
 		r, g, b,
 
 		//back
-		1, 1, 1,
+		x + 1, y + 1, z + 1,
+		0, 0, -1,
 		r, g, b,
 
-		-1, -1, 1,
+		x + -1, y + -1, z + 1,
+		0, 0, -1,
 		r, g, b,
 
-		1, -1, 1,
+		x + 1, y + -1, z + 1,
+		0, 0, -1,
 		r, g, b,
 
 
 		
-		-1, -1, 1,
+		x + -1, y + -1, z + 1,
+		0, 0, -1,
 		r, g, b,
 
-		1, 1, 1,
+		x + 1, y + 1, z + 1,
+		0, 0, -1,
 		r, g, b,
 		
-		-1, 1, 1,
+		x + -1, y + 1, z + 1,
+		0, 0, -1,
 		r, g, b,
 
 		//top
-		1, 1, 1,
+		x + 1, y + 1,  z + 1,
+		0, 1, 0,
 		r, g, b,
 
-		-1, 1, -1,
+		x + -1, y + 1,  z + -1,
+		0, 1, 0,
 		r, g, b,
 		
-		-1, 1, 1,
+		x + -1, y + 1, z + 1,
+		0, 1, 0,
 		r, g, b,
 
 
 		
-		-1, 1, -1,
+		x + -1, y + 1, z + -1,
+		0, 1, 0,
 		r, g, b,
 
-		1, 1, 1,
+		x + 1, y + 1, z + 1,
+		0, 1, 0,
 		r, g, b,
 		
-		1, 1, -1,
+		x + 1, y + 1,  z + -1,
+		0, 1, 0,
 		r, g, b,
 
 		//bottom
-		1, -1, 1,
+		x + 1, y + -1, z + 1,
+		0, -1, 0,
 		r, g, b,
 
-		-1, -1, -1,
+		x + -1, y + -1, z + -1,
+		0, -1, 0,
 		r, g, b,
 		
-		1, -1, -1,
+		x + 1, y + -1, z + -1,
+		0, -1, 0,
 		r, g, b,
 
 
 		 
-		-1, -1, -1,
+		x + -1, y + -1, z + -1,
+		0, -1, 0,
 		r, g, b,
 
-		1, -1, 1,
+		x + 1, y + -1, z + 1,
+		0, -1, 0,
 		r, g, b,
 		
-		-1, -1, 1,
+		x + -1, y + -1, z + 1,
+		0, -1, 0,
 		r, g, b,
 		 
 		//Left
-		-1, 1, -1,
+		x + -1, y + 1, z + -1,
+		1, 0, 0,
 		r, g, b,
 
-		-1, -1, 1,
+		x + -1, y + -1, z + 1,
+		1, 0, 0,
 		r, g, b,
 
-		-1, 1, 1,
+		x + -1, y + 1, z + 1,
+		1, 0, 0,
 		r, g, b,
 
 
 		
-		-1, -1, 1,
+		x + -1, y + -1, z + 1,
+		1, 0, 0,
 		r, g, b,
 
-		-1, 1, -1,
+		x + -1, y + 1, z + -1,
+		1, 0, 0,
 		r, g, b,
 		
-		-1, -1, -1,
+		x + -1, y + -1, z + -1,
+		1, 0, 0,
 		r, g, b,
 
 		//Right
-		1, 1, 1,
+		x + 1, y + 1, z + 1,
+		-1, 0, 0,
 		r, g, b,
 
-		1, -1, -1,
+		x + 1, y + -1, z + -1,
+		-1, 0, 0,
 		r, g, b,
 
-		1, 1, -1,
+		x + 1, y + 1, z + -1,
+		-1, 0, 0,
 		r, g, b,
 
 
 
-		1, -1, -1,
+		x + 1, y + -1, z + -1,
+		-1, 0, 0,
 		r, g, b,
 
-		1, 1, 1,
+		x + 1, y + 1, z + 1,
+		-1, 0, 0,
 		r, g, b,
 
-		1, -1, 1,
+		x + 1, y + -1, z + 1,
+		-1, 0, 0,
 		r, g, b,
 	};
 

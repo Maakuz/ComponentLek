@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include "ShaderHandler.h"
 #include "TransformBuffer.h"
+#include "LightHandler.h"
 
 class GraphicsHandler 
 {
@@ -13,8 +14,11 @@ private:
 	ID3D11Device* mDevice;
 	ID3D11DeviceContext* mContext;
 	ID3D11RenderTargetView* mBackBufferRTV;
+	ID3D11DepthStencilState* mDSS;
+	ID3D11DepthStencilView* mDSV;
 	ID3D11Debug* mDebugDevice;
 	D3D11_VIEWPORT mView;
+	LightHandler mLightHandler;
 
 	ShaderHandler mShaderHandler;
 
@@ -27,6 +31,8 @@ public:
 
 	HRESULT setup3DContent();
 	void setupShaders();
+	void setupLightHandler();
+	void setupDepthStencil();
 	void setupView(int width, int height);
 	void setVP(ID3D11Buffer* vp);
 
@@ -36,6 +42,7 @@ public:
 
 	ID3D11Device* getDevice();
 	ID3D11DeviceContext* getDeviceContext();
+	LightHandler* getLightHandler();
 };
 
 #endif

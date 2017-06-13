@@ -8,6 +8,7 @@
 #include "Position.h"
 #include "KeyboardMovement.h"
 #include "TransformBuffer.h"
+#include "DirectionalLight.h"
 
 class Game
 {
@@ -26,7 +27,9 @@ public:
 	void handleKeyPress(SDL_KeyboardEvent const &key);
 	void handleKeyRelease(SDL_KeyboardEvent const &key);
 
-	std::vector<Vertex> createCube(float r, float g, float b);
+	void AddDirLight(Entity* entity, DirectionalLight* dirLight);
+
+	std::vector<Vertex> createCube(float r, float g, float b, float x = 0, float y = 0, float z = 0);
 };
 
 #endif

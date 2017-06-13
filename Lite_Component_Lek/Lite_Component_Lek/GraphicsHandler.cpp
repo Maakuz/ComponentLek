@@ -15,6 +15,8 @@ GraphicsHandler::~GraphicsHandler()
 	this->mContext->Release();
 	this->mDevice->Release();
 	this->mSwapChain->Release();
+	this->mDSS->Release();
+	this->mDSV->Release();
 
 
 
@@ -75,7 +77,8 @@ void GraphicsHandler::setupShaders()
 	D3D11_INPUT_ELEMENT_DESC desc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	mEntitySetup.vs = mShaderHandler.setupVertexShader(this->mDevice, L"VertexShader.hlsl", "main", desc, ARRAYSIZE(desc));
@@ -91,6 +94,60 @@ void GraphicsHandler::setupShaders()
 	mEntitySetup.ps = mShaderHandler.setupPixelShader(this->mDevice, L"PixelShader.hlsl", "main");
 	if (mEntitySetup.ps == -1)
 		exit(-3);
+}
+
+void GraphicsHandler::setupLightHandler()
+{
+	this->mLightHandler.setupLightBuffers(this->mDevice);
+}
+
+void GraphicsHandler::setupDepthStencil()
+{
+	D3D11_TEXTURE2D_DESC descTex;
+	ZeroMemory(&descTex, sizeof(descTex));
+	descTex.ArraySize = descTex.MipLevels = 1;
+	descTex.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descTex.Format = DXGI_FORMAT_D32_FLOAT;
+	descTex.Height = 720;
+	descTex.Width = 1280;
+	descTex.SampleDesc.Count = 4;
+
+	ID3D11Texture2D* texture;
+
+	HRESULT hr = this->mDevice->CreateTexture2D(&descTex, NULL, &texture);
+	if (FAILED(hr))
+	{
+		MessageBox(0, L"Depth texture creation failed", L"error", MB_OK);
+	}
+
+	D3D11_DEPTH_STENCIL_DESC descSten;
+	ZeroMemory(&descSten, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	descSten.DepthEnable = true;
+	descSten.DepthFunc = D3D11_COMPARISON_LESS;
+	descSten.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	descSten.StencilEnable = false;
+
+	hr = this->mDevice->CreateDepthStencilState(&descSten, &this->mDSS);
+	if (FAILED(hr))
+	{
+		MessageBox(0, L"Depth stencil state creation failed", L"error", MB_OK);
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC descStenV;
+	ZeroMemory(&descStenV, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+	descStenV.Format = DXGI_FORMAT_D32_FLOAT;
+	descStenV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+
+	hr = this->mDevice->CreateDepthStencilView(texture, &descStenV, &this->mDSV);
+	if (FAILED(hr))
+	{
+		MessageBox(0, L"Depth stencil view creation failed", L"error", MB_OK);
+	}
+
+	this->mContext->OMSetDepthStencilState(this->mDSS, 0);
+
+	texture->Release();
+
 }
 
 void GraphicsHandler::setupView(int width, int height)
@@ -131,6 +188,8 @@ void GraphicsHandler::render(Entity* entity)
 		this->mShaderHandler.setVS(this->mEntitySetup.vsTransform, this->mContext);
 	}
 
+	this->mLightHandler.setConstantBuffer(this->mContext);
+
 	this->mContext->RSSetViewports(1, &this->mView);
 	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, nullptr);
 	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -151,4 +210,9 @@ ID3D11Device* GraphicsHandler::getDevice()
 ID3D11DeviceContext* GraphicsHandler::getDeviceContext()
 {
 	return this->mContext;
+}
+
+LightHandler* GraphicsHandler::getLightHandler()
+{
+	return &this->mLightHandler;
 }

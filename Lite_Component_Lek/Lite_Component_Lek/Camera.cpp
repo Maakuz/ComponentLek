@@ -7,10 +7,10 @@ Camera::Camera(int width, int height) : Component(ComponentID::camera)
 
 	this->mVPBuffer = nullptr;
 
-	this->mPos = Vector3(-10, 0, 0);
-	this->mForward = Vector3(1, 0, 0);
+	this->mPos = Vector3(-10, 10, 0);
+	this->mForward = Vector3(0.5f, -0.5f, 0);
 	this->mRight = Vector3(0, 0, 1);
-	this->mUp = Vector3(0, 1, 0);
+	this->mUp = Vector3(0.5f, 0.5f, 0);
 	
 	this->mYaw = 0;
 	this->mPitch = 0;
@@ -20,6 +20,7 @@ Camera::Camera(int width, int height) : Component(ComponentID::camera)
 
 	this->mVP.view = DirectX::XMMatrixLookToLH(this->mPos, this->mForward, this->mUp);
 	this->mVP.view = this->mVP.view.Transpose();
+
 }
 
 Camera::~Camera()

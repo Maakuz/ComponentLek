@@ -8,7 +8,8 @@ enum ComponentID
 	position = 2,
 	velocity = 3,
 	keyboardInput = 4,
-	transformBuffer = 5
+	transformBuffer = 5,
+	directionalLight = 6
 };
 
 class Component
