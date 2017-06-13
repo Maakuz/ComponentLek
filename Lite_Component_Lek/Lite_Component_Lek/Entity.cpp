@@ -37,6 +37,9 @@ void Entity::addComponent(Component* component)
 	if (component->getId() == ComponentID::keyboardInput)
 		assert(this->hasComponent(ComponentID::velocity));
 
+	if (component->getId() == ComponentID::pointLight)
+		assert(this->hasComponent(ComponentID::position));
+
 
 	this->mComponents[component->getId()] = component;
 }

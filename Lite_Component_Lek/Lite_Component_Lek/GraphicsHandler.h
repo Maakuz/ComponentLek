@@ -22,7 +22,7 @@ private:
 
 	ShaderHandler mShaderHandler;
 
-	struct shaderSetup { int vs; int vsTransform; int gs; int ps; };
+	struct shaderSetup { int vs; int vsTransform; int gs; int ps; int psLight; };
 	shaderSetup mEntitySetup;
 
 public:

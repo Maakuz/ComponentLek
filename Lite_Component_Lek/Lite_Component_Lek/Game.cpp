@@ -8,8 +8,24 @@ Game::Game(GraphicsHandler* gHandler)
 	gHandler->setupLightHandler();
 	gHandler->setupView(1280, 720);
 	Entity* floorEntity = new Entity;
+	Entity* wallEntity = new Entity;
 	Entity* cameraEntity = new Entity;
 	Entity* lightEntity = new Entity;
+
+	Mesh* meshWall = new Mesh;
+	std::vector<Vertex> meshWallVec;
+	for (int i = 0; i < 10; i++)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 10, -2 + j * 2, i * 2);
+
+			meshWallVec.insert(meshWallVec.end(), vec.begin(), vec.end());
+		}
+	}
+
+	meshWall->loadMesh(meshWallVec, gHandler->getDevice());
+	wallEntity->addComponent(meshWall);
 
 	floorEntity->addComponent(new Position());
 	
@@ -41,6 +57,8 @@ Game::Game(GraphicsHandler* gHandler)
 	cameraEntity->addComponent(cameraCom);
 
 	lightEntity->addComponent(new Position());
+
+	this->AddPointLight(lightEntity, new PointLight(10, DirectX::SimpleMath::Vector3(0, 3, 0)));
 	
 	lightEntity->addComponent(transform);
 
@@ -57,6 +75,7 @@ Game::Game(GraphicsHandler* gHandler)
 
 	mEntities.push_back(floorEntity);
 	mEntities.push_back(lightEntity);
+	mEntities.push_back(wallEntity);
 
 
 	
@@ -114,8 +133,18 @@ void Game::update(float deltaTime)
 				Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
 				buffer->multiplyCurrent(pos->getTransformMatrix());
 			}
+
+
 			
 			buffer->updateBuffer(this->mGraphicsHandler->getDeviceContext());
+		}
+
+		if (this->mEntities[i]->hasComponent(ComponentID::pointLight))
+		{
+			PointLight* light = dynamic_cast<PointLight*>(this->mEntities[i]->getComponent(ComponentID::pointLight));
+			Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
+
+			light->setPos(pos->getPosition() + DirectX::SimpleMath::Vector3(0, 1, 0));
 		}
 
 	}
@@ -184,59 +213,60 @@ std::vector<Vertex> Game::createCube(float r, float g, float b, float x, float y
 {
 	using namespace DirectX::SimpleMath;
 	//this was very annoying, it better be right.
+	//This cube is fucked so far beyond coprehension
 	Vertex cube[]
 	{
 		//front
 		x + 1, y + 1, z + -1,
-		0, 0, 1,
+		0, 0, -1,
 		r, g, b,
 		
 		x + -1, y + -1, z + -1,
-		0, 0, 1,
+		0, 0, -1,
 		r, g, b,
 
 		x + -1, y + 1, z + -1,
-		0, 0, 1,
+		0, 0, -1,
 		r, g, b,
 
 
 		x + -1, y + -1, z + -1,
-		0, 0, 1,
+		0, 0, -1,
 		r, g, b,
 
 		x + 1, y + 1, z + -1,
-		0, 0, 1,
+		0, 0, -1,
 		r, g, b,
 
 		x + 1, y + -1, z + -1,
-		0, 0, 1,
+		0, 0, -1,
 		r, g, b,
 
 		//back
 		x + 1, y + 1, z + 1,
-		0, 0, -1,
+		0, 0, 1,
 		r, g, b,
 
 		x + -1, y + -1, z + 1,
-		0, 0, -1,
+		0, 0, 1,
 		r, g, b,
 
 		x + 1, y + -1, z + 1,
-		0, 0, -1,
+		0, 0, 1,
 		r, g, b,
 
 
 		
 		x + -1, y + -1, z + 1,
-		0, 0, -1,
+		0, 0, 1,
 		r, g, b,
 
 		x + 1, y + 1, z + 1,
-		0, 0, -1,
+		0, 0, 1,
 		r, g, b,
 		
 		x + -1, y + 1, z + 1,
-		0, 0, -1,
+		0, 0, 1,
 		r, g, b,
 
 		//top
@@ -295,56 +325,56 @@ std::vector<Vertex> Game::createCube(float r, float g, float b, float x, float y
 		 
 		//Left
 		x + -1, y + 1, z + -1,
-		1, 0, 0,
+		-1, 0, 0,
 		r, g, b,
 
 		x + -1, y + -1, z + 1,
-		1, 0, 0,
+		-1, 0, 0,
 		r, g, b,
 
 		x + -1, y + 1, z + 1,
-		1, 0, 0,
+		-1, 0, 0,
 		r, g, b,
 
 
 		
 		x + -1, y + -1, z + 1,
-		1, 0, 0,
+		-1, 0, 0,
 		r, g, b,
 
 		x + -1, y + 1, z + -1,
-		1, 0, 0,
+		-1, 0, 0,
 		r, g, b,
 		
 		x + -1, y + -1, z + -1,
-		1, 0, 0,
+		-1, 0, 0,
 		r, g, b,
 
 		//Right
 		x + 1, y + 1, z + 1,
-		-1, 0, 0,
+		1, 0, 0,
 		r, g, b,
 
 		x + 1, y + -1, z + -1,
-		-1, 0, 0,
+		1, 0, 0,
 		r, g, b,
 
 		x + 1, y + 1, z + -1,
-		-1, 0, 0,
+		1, 0, 0,
 		r, g, b,
 
 
 
 		x + 1, y + -1, z + -1,
-		-1, 0, 0,
+		1, 0, 0,
 		r, g, b,
 
 		x + 1, y + 1, z + 1,
-		-1, 0, 0,
+		1, 0, 0,
 		r, g, b,
 
 		x + 1, y + -1, z + 1,
-		-1, 0, 0,
+		1, 0, 0,
 		r, g, b,
 	};
 

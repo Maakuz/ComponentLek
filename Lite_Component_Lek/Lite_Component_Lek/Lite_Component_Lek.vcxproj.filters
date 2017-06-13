@@ -133,5 +133,8 @@
     <FxCompile Include="VertexShaderTransform.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="PixelShaderLight.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

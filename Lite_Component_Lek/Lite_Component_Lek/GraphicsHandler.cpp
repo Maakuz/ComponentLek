@@ -94,6 +94,10 @@ void GraphicsHandler::setupShaders()
 	mEntitySetup.ps = mShaderHandler.setupPixelShader(this->mDevice, L"PixelShader.hlsl", "main");
 	if (mEntitySetup.ps == -1)
 		exit(-3);
+
+	mEntitySetup.psLight = mShaderHandler.setupPixelShader(this->mDevice, L"PixelShaderLight.hlsl", "main");
+	if (mEntitySetup.psLight == -1)
+		exit(-3);
 }
 
 void GraphicsHandler::setupLightHandler()
@@ -187,6 +191,11 @@ void GraphicsHandler::render(Entity* entity)
 		ID3D11Buffer* temp2 = transform->getBuffer();
 		this->mContext->VSSetConstantBuffers(1, 1, &temp2);
 		this->mShaderHandler.setVS(this->mEntitySetup.vsTransform, this->mContext);
+	}
+
+	if (entity->hasComponent(ComponentID::pointLight))
+	{
+		this->mShaderHandler.setPS(this->mEntitySetup.psLight, this->mContext);
 	}
 
 	this->mLightHandler.setConstantBuffer(this->mContext);
