@@ -9,7 +9,8 @@ enum ComponentID
 	velocity = 3,
 	keyboardInput = 4,
 	transformBuffer = 5,
-	directionalLight = 6
+	directionalLight = 6,
+	pointLight = 7
 };
 
 class Component

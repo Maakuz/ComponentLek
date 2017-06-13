@@ -1,14 +1,18 @@
 #ifndef LIGHTHANDLER_H
 #define LIGHTHANDLER_H
 #include "DirectionalLight.h"
+#include "PointLight.h"
 #include <vector>
 
 class LightHandler
 {
 private:
 	std::vector<DirectionalLight*> mDirLights;
-	bool mLightingChanged;
+	std::vector<PointLight*> mPointLights;
+	bool mDirLightChanged;
+	bool mPointLightChanged;
 	ID3D11Buffer* mDirLightBuffer;
+	ID3D11Buffer* mPointLightBuffer;
 
 public:
 	LightHandler();
@@ -17,6 +21,7 @@ public:
 	void setupLightBuffers(ID3D11Device* device);
 
 	void addDirectionalLight(DirectionalLight* light);
+	void addPointLight(PointLight* light);
 	void removeDirectionalLight(DirectionalLight* light);
 	void setConstantBuffer(ID3D11DeviceContext* context);
 };

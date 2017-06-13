@@ -4,19 +4,20 @@ Game::Game(GraphicsHandler* gHandler)
 {
 	this->mGraphicsHandler = gHandler;
 	gHandler->setupShaders();
+	gHandler->setupDepthStencil();
 	gHandler->setupLightHandler();
 	gHandler->setupView(1280, 720);
-	Entity* entity = new Entity;
+	Entity* floorEntity = new Entity;
 	Entity* cameraEntity = new Entity;
+	Entity* lightEntity = new Entity;
 
-
-	entity->addComponent(new Position());
+	floorEntity->addComponent(new Position());
 	
 	Mesh* mesh = new Mesh;
 	std::vector<Vertex> meshVec;
 	for (int i = 0; i < 10; i++)
 	{
-		std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 0.5f + (i * 2));
+		std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 0.5f + (i * 2), -2);
 
 		meshVec.insert(meshVec.end(), vec.begin(), vec.end());
 	}
@@ -34,20 +35,28 @@ Game::Game(GraphicsHandler* gHandler)
 	TransformBuffer* transform = new TransformBuffer;
 	transform->setupBuffer(this->mGraphicsHandler->getDevice());
 
-	entity->addComponent(transform);
-	entity->addComponent(mesh);
+	floorEntity->addComponent(mesh);
 
 	cameraEntity->addComponent(pos);
 	cameraEntity->addComponent(cameraCom);
 
-	entity->addComponent(vel);
+	lightEntity->addComponent(new Position());
+	
+	lightEntity->addComponent(transform);
 
-	entity->addComponent(new KeyboardMovement(0.001f));
+	lightEntity->addComponent(vel);
 
-	this->AddDirLight(entity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
+	lightEntity->addComponent(new KeyboardMovement(0.001f));
+
+	mesh = new Mesh;
+	mesh->loadMesh(createCube(0, 1, 0), this->mGraphicsHandler->getDevice());
+	lightEntity->addComponent(mesh);
+
+	this->AddDirLight(floorEntity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
 	this->AddDirLight(cameraEntity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
 
-	mEntities.push_back(entity);
+	mEntities.push_back(floorEntity);
+	mEntities.push_back(lightEntity);
 
 
 	
@@ -163,6 +172,12 @@ void Game::AddDirLight(Entity* entity, DirectionalLight* dirLight)
 {
 	entity->addComponent(dirLight);
 	this->mGraphicsHandler->getLightHandler()->addDirectionalLight(dirLight);
+}
+
+void Game::AddPointLight(Entity* entity, PointLight* pointLight)
+{
+	entity->addComponent(pointLight);
+	this->mGraphicsHandler->getLightHandler()->addPointLight(pointLight);
 }
 
 std::vector<Vertex> Game::createCube(float r, float g, float b, float x, float y, float z)

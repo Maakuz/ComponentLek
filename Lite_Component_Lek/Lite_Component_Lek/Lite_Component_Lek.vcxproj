@@ -153,6 +153,7 @@
     <ClCompile Include="LightHandler.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Position.cpp" />
     <ClCompile Include="ShaderHandler.cpp" />
     <ClCompile Include="TransformBuffer.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="KeyboardMovement.h" />
     <ClInclude Include="LightHandler.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="PointLight.h" />
     <ClInclude Include="Position.h" />
     <ClInclude Include="ShaderHandler.h" />
     <ClInclude Include="TransformBuffer.h" />

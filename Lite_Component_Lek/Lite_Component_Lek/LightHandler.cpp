@@ -2,7 +2,8 @@
 
 LightHandler::LightHandler()
 {
-	this->mLightingChanged = false;
+	this->mDirLightChanged = false;
+	this->mPointLightChanged = false;
 }
 
 LightHandler::~LightHandler()
@@ -25,7 +26,13 @@ void LightHandler::setupLightBuffers(ID3D11Device* device)
 void LightHandler::addDirectionalLight(DirectionalLight* light)
 {
 	this->mDirLights.push_back(light);
-	this->mLightingChanged = true;
+	this->mDirLightChanged = true;
+}
+
+void LightHandler::addPointLight(PointLight* light)
+{
+	this->mPointLights.push_back(light);
+	this->mPointLightChanged = true;
 }
 
 void LightHandler::removeDirectionalLight(DirectionalLight* light)
@@ -34,7 +41,7 @@ void LightHandler::removeDirectionalLight(DirectionalLight* light)
 
 void LightHandler::setConstantBuffer(ID3D11DeviceContext* context)
 {
-	if (mLightingChanged)
+	if (mDirLightChanged)
 	{
 		struct Test 
 		{
@@ -56,7 +63,12 @@ void LightHandler::setConstantBuffer(ID3D11DeviceContext* context)
 		context->Map(this->mDirLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &data);
 		memcpy(data.pData, &test, 4 * sizeof(float) * 21);
 		context->Unmap(this->mDirLightBuffer, 0);
-		this->mLightingChanged = false;
+		this->mDirLightChanged = false;
+	}
+
+	if (mPointLightChanged)
+	{
+
 	}
 
 	context->PSSetConstantBuffers(0, 1, &mDirLightBuffer);

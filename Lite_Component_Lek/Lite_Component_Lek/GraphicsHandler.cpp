@@ -169,6 +169,7 @@ void GraphicsHandler::clear()
 {
 	float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	this->mContext->ClearRenderTargetView(this->mBackBufferRTV, clearColor);
+	this->mContext->ClearDepthStencilView(this->mDSV, D3D11_CLEAR_DEPTH, 1.f, 0);
 }
 
 void GraphicsHandler::render(Entity* entity)
@@ -191,7 +192,7 @@ void GraphicsHandler::render(Entity* entity)
 	this->mLightHandler.setConstantBuffer(this->mContext);
 
 	this->mContext->RSSetViewports(1, &this->mView);
-	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, nullptr);
+	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, this->mDSV);
 	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	this->mContext->IASetVertexBuffers(0, 1, &temp, &stride, &offset);
 	this->mContext->Draw(mesh->getNrOfVertices(), 0);
