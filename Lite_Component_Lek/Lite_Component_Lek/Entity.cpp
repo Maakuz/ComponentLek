@@ -40,6 +40,9 @@ void Entity::addComponent(Component* component)
 	if (component->getId() == ComponentID::pointLight)
 		assert(this->hasComponent(ComponentID::position));
 
+	if (component->getId() == ComponentID::gravity)
+		assert(this->hasComponent(ComponentID::velocity));
+
 
 	this->mComponents[component->getId()] = component;
 }

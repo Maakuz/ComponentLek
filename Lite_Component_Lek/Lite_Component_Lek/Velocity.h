@@ -15,6 +15,9 @@ public:
 
 	void setVelocity(DirectX::SimpleMath::Vector3 velocity);
 	void addVelocity(DirectX::SimpleMath::Vector3 velocity);
+	void addXVelocity(float velocity);
+	void addYVelocity(float velocity);
+	void addZVelocity(float velocity);
 
 	void applyFriction();
 

@@ -7,83 +7,15 @@ Game::Game(GraphicsHandler* gHandler)
 	gHandler->setupDepthStencil();
 	gHandler->setupLightHandler();
 	gHandler->setupView(1280, 720);
-	Entity* floorEntity = new Entity;
-	Entity* wallEntity = new Entity;
-	Entity* cameraEntity = new Entity;
-	Entity* lightEntity = new Entity;
 
-	Mesh* meshWall = new Mesh;
-	std::vector<Vertex> meshWallVec;
-	for (int i = 0; i < 10; i++)
-	{
-		for (int j = 0; j < 10; j++)
-		{
-			std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 10, -2 + j * 2, i * 2);
+	this->camOffset = DirectX::SimpleMath::Vector3(-10, 5, 0);
 
-			meshWallVec.insert(meshWallVec.end(), vec.begin(), vec.end());
-		}
-	}
-
-	meshWall->loadMesh(meshWallVec, gHandler->getDevice());
-	wallEntity->addComponent(meshWall);
-
-	floorEntity->addComponent(new Position());
+	this->createPlayer();
+	this->createCamera();
+	this->createGround();
 	
-	Mesh* mesh = new Mesh;
-	std::vector<Vertex> meshVec;
-	for (int i = 0; i < 10; i++)
-	{
-		std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 0.5f + (i * 2), -2);
-
-		meshVec.insert(meshVec.end(), vec.begin(), vec.end());
-	}
-
-	mesh->loadMesh(meshVec, gHandler->getDevice());
-
-	Velocity* vel = new Velocity(0.97f);
-
-	Camera* cameraCom = new Camera(1280, 720);
-	cameraCom->setupBuffer(this->mGraphicsHandler->getDevice());
-
-	Position* pos = new Position();
-	pos->setPosition(DirectX::SimpleMath::Vector3(-10, 10, 0));
-
-	TransformBuffer* transform = new TransformBuffer;
-	transform->setupBuffer(this->mGraphicsHandler->getDevice());
-
-	floorEntity->addComponent(mesh);
-
-	cameraEntity->addComponent(pos);
-	cameraEntity->addComponent(cameraCom);
-
-	lightEntity->addComponent(new Position());
-
-	this->AddPointLight(lightEntity, new PointLight(10, DirectX::SimpleMath::Vector3(0, 3, 0)));
-	
-	lightEntity->addComponent(transform);
-
-	lightEntity->addComponent(vel);
-
-	lightEntity->addComponent(new KeyboardMovement(0.001f));
-
-	mesh = new Mesh;
-	mesh->loadMesh(createCube(0, 1, 0), this->mGraphicsHandler->getDevice());
-	lightEntity->addComponent(mesh);
-
-	this->AddDirLight(floorEntity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
-	this->AddDirLight(cameraEntity, new DirectionalLight(DirectX::SimpleMath::Vector3(0.3f, 0.7f, 0)));
-
-	mEntities.push_back(floorEntity);
-	mEntities.push_back(lightEntity);
-	mEntities.push_back(wallEntity);
-
-
-	
-
-	
-	
-	mEntities.push_back(cameraEntity);
-
+	this->mEntities.push_back(player);
+	this->mEntities.push_back(cameraEntity);
 }
 
 Game::~Game()
@@ -94,8 +26,68 @@ Game::~Game()
 	}
 }
 
+void Game::createPlayer()
+{
+	Mesh* playerMesh = new Mesh;
+	playerMesh->loadMesh(this->createCube(0, 1, 0), this->mGraphicsHandler->getDevice());
+
+	Velocity* vel = new Velocity(0.97f);
+
+	TransformBuffer* buf = new TransformBuffer();
+	buf->setupBuffer(this->mGraphicsHandler->getDevice());
+
+	this->player = new Entity;
+
+	this->player->addComponent(new Position);
+	this->player->addComponent(buf);
+	this->player->addComponent(playerMesh);
+	this->player->addComponent(vel);
+	this->player->addComponent(new KeyboardMovement(0.001, vel));
+
+	//TODO: HITBOX
+}
+
+void Game::createCamera()
+{
+	this->cameraEntity = new Entity;
+	Camera* cam = new Camera(1280, 720);
+	cam->setupBuffer(this->mGraphicsHandler->getDevice());
+
+	DirectionalLight* light = new DirectionalLight(DirectX::SimpleMath::Vector3(0.5f, -0.5f, 0), DirectX::SimpleMath::Vector3(0.5f, 0.5f, 0.5f));
+	this->AddDirLight(this->cameraEntity, light);
+
+	this->cameraEntity->addComponent(new Position(this->camOffset.x, this->camOffset.y, this->camOffset.z));
+	this->cameraEntity->addComponent(cam);
+}
+
+void Game::createGround()
+{
+	Mesh* meshWall = new Mesh;
+	std::vector<Vertex> meshGroundVec;
+	for (int i = 0; i < 10; i++)
+	{
+		std::vector<Vertex> vec = createCube(0.9f, 0.9f, 0.9f, 0, -2, -6 + (i * 2));
+
+		meshGroundVec.insert(meshGroundVec.end(), vec.begin(), vec.end());
+	}
+
+	meshWall->loadMesh(meshGroundVec, this->mGraphicsHandler->getDevice());
+
+	Entity* ground = new Entity;
+
+	ground->addComponent(meshWall);
+
+	this->mEntities.push_back(ground);
+
+	//TODO: HITBOX
+
+
+	
+}
+
 void Game::update(float deltaTime)
 {
+	//TODO: FAKTISKT GÖRA ETT SPEL
 	for (int i = 0; i < this->mEntities.size(); i++)
 	{
 		if (this->mEntities[i]->hasComponent(ComponentID::velocity))
@@ -106,7 +98,7 @@ void Game::update(float deltaTime)
 			if (this->mEntities[i]->hasComponent(ComponentID::keyboardInput))
 			{
 				KeyboardMovement* km = dynamic_cast<KeyboardMovement*>(this->mEntities[i]->getComponent(ComponentID::keyboardInput));
-				vel->addVelocity(km->getSpeed());
+				km->update(deltaTime);
 			}
 
 
@@ -118,8 +110,11 @@ void Game::update(float deltaTime)
 		if (this->mEntities[i]->hasComponent(ComponentID::camera))
 		{
 			Camera* cam = dynamic_cast<Camera*>(this->mEntities[i]->getComponent(ComponentID::camera));
-			cam->setPos(dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position))->getPosition());
+			Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
+			cam->setPos(pos->getPosition());
 			cam->updateCamera(this->mGraphicsHandler->getDeviceContext());
+
+			std::cout << pos->toString() << std::endl;
 		}
 
 		if (this->mEntities[i]->hasComponent(ComponentID::transformBuffer))
@@ -147,7 +142,49 @@ void Game::update(float deltaTime)
 			light->setPos(pos->getPosition() + DirectX::SimpleMath::Vector3(0, 1, 0));
 		}
 
+		if (this->mEntities[i]->hasComponent(ComponentID::collisionBox))
+		{
+			CollisionBox* box1 = dynamic_cast<CollisionBox*>(this->mEntities[i]->getComponent(ComponentID::collisionBox));
+
+			if (this->mEntities[i]->hasComponent(ComponentID::position))
+			{
+				Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
+
+				box1->setPosition(pos->getPosition());
+			}
+
+			for (int j = 0; j < this->mEntities.size(); j++)
+			{
+				if (this->mEntities[j]->hasComponent(ComponentID::collisionBox) && i != j)
+				{
+					CollisionBox* box2 = dynamic_cast<CollisionBox*>(this->mEntities[j]->getComponent(ComponentID::collisionBox));
+
+					if (box1->intersects(*box2))
+					{
+						//TODO: någon form av intersection handling
+					}
+				}
+			}
+		}
+
+		if (this->mEntities[i]->hasComponent(ComponentID::gravity))
+		{
+			Gravity* grav = dynamic_cast<Gravity*>(this->mEntities[i]->getComponent(ComponentID::gravity));
+			Velocity* vel = dynamic_cast<Velocity*>(this->mEntities[i]->getComponent(ComponentID::velocity));
+
+			vel->addYVelocity(-grav->getGravForce());
+
+		}
 	}
+
+	//Make camera follow player
+
+	Position* camPos = dynamic_cast<Position*>(this->cameraEntity->getComponent(ComponentID::position));
+	Position* playerPos = dynamic_cast<Position*>(this->player->getComponent(ComponentID::position));
+
+	camPos->setPosition(playerPos->getPosition() + this->camOffset);
+
+
 }
 
 void Game::draw()
@@ -179,7 +216,6 @@ void Game::handleKeyPress(SDL_KeyboardEvent const& key)
 		if (this->mEntities[i]->hasComponent(ComponentID::keyboardInput))
 		{
 			KeyboardMovement* km = dynamic_cast<KeyboardMovement*>(this->mEntities[i]->getComponent(ComponentID::keyboardInput));
-			Velocity* vel = dynamic_cast<Velocity*>(this->mEntities[i]->getComponent(ComponentID::velocity));
 			km->handleKeyPress(key);
 		}
 	}

@@ -1,8 +1,8 @@
 #include "Position.h"
 
-Position::Position() : Component(ComponentID::position)
+Position::Position(float x, float y, float z) : Component(ComponentID::position)
 {
-	this->mPos = { 0 };
+	this->mPos = DirectX::SimpleMath::Vector3(x, y, z);
 }
 
 Position::~Position()
@@ -27,4 +27,12 @@ DirectX::SimpleMath::Vector3 Position::getPosition() const
 DirectX::SimpleMath::Matrix Position::getTransformMatrix() const
 {
 	return DirectX::SimpleMath::Matrix::CreateTranslation(this->mPos).Transpose();
+}
+
+std::string Position::toString()
+{
+	std::stringstream ret;
+	ret << "x: " << this->mPos.x << " y: " << this->mPos.y << " z: " << this->mPos.z;
+
+	return ret.str();
 }

@@ -1,5 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
+#include <iostream>
+
 #include "GraphicsHandler.h"
 #include "SimpleMath.h"
 #include "Entity.h"
@@ -10,16 +12,26 @@
 #include "TransformBuffer.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "CollisionBox.h"
+#include "Gravity.h"
+
 class Game
 {
 private:
 	GraphicsHandler* mGraphicsHandler;
 
 	std::vector<Entity*> mEntities;
+	Entity* player;
+	Entity* cameraEntity;
+	DirectX::SimpleMath::Vector3 camOffset;
 
+	void createPlayer();
+	void createCamera();
+	void createGround();
 public:
 	Game(GraphicsHandler* gHandler);
 	virtual ~Game();
+
 
 	void update(float deltaTime);
 	void draw();

@@ -20,6 +20,21 @@ void Velocity::addVelocity(DirectX::SimpleMath::Vector3 velocity)
 	this->mVelocity += velocity;
 }
 
+void Velocity::addXVelocity(float velocity)
+{
+	this->mVelocity.x += velocity;
+}
+
+void Velocity::addYVelocity(float velocity)
+{
+	this->mVelocity.y += velocity;
+}
+
+void Velocity::addZVelocity(float velocity)
+{
+	this->mVelocity.z += velocity;
+}
+
 void Velocity::applyFriction()
 {
 	this->mVelocity *= this->mFriction;

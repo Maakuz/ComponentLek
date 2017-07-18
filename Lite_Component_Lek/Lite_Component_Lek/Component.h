@@ -10,7 +10,9 @@ enum ComponentID
 	keyboardInput = 4,
 	transformBuffer = 5,
 	directionalLight = 6,
-	pointLight = 7
+	pointLight = 7,
+	collisionBox = 8,
+	gravity = 9
 };
 
 class Component

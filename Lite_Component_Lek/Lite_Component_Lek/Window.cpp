@@ -42,13 +42,12 @@ void Window::run(GraphicsHandler* gHandler)
 			
 		}
 
-		//TODO: UPDATE
 		prevTime = currentTime;
 		currentTime = SDL_GetPerformanceCounter();
 
 		deltaTime = ((float)(currentTime - prevTime) / SDL_GetPerformanceFrequency()) * 1000;
 
-		std::cout << deltaTime << std::endl;
+		//std::cout << deltaTime << std::endl;
 		SDL_Delay(1);
 
 
