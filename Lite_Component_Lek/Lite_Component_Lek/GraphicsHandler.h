@@ -6,6 +6,7 @@
 #include "ShaderHandler.h"
 #include "TransformBuffer.h"
 #include "LightHandler.h"
+#include "ParticleEmitter.h"
 
 class GraphicsHandler 
 {

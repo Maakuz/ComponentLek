@@ -13,9 +13,10 @@ class ParticleEmitter : public Component
 private:
 	std::vector<Particle> mParticles;
 	EasyBuffer mBuffer;
+	DirectX::SimpleMath::Vector3 mPos;
 
 public:
-	ParticleEmitter();
+	ParticleEmitter(DirectX::SimpleMath::Vector3 pos = DirectX::SimpleMath::Vector3(0, 0, 0));
 	~ParticleEmitter();
 
 	void setupBuffer(ID3D11Device* device);
@@ -23,6 +24,8 @@ public:
 	void update(float dt);
 
 	void addParticle(Particle particle);
+	int getNrOfParticles() const;
+	ID3D11Buffer* getBuffer();
 
 	void createShape(ID3D11DeviceContext* context);
 };

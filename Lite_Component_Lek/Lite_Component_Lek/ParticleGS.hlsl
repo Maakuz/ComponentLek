@@ -1,12 +1,26 @@
-struct GSOutput
+struct GS_IN
+{
+	float4 pos : SV_POSITION;
+	float3 color : COLOR;
+};
+
+struct GS_OUT
 {
 	float4 pos : SV_POSITION;
 };
 
-[maxvertexcount(3)]
+cbuffer VP : register(b0)
+{
+	matrix VP;
+};
+
+float4 camPos : register(b1);
+
+
+[maxvertexcount(4)]
 void main(
-	triangle float4 input[3] : SV_POSITION, 
-	inout TriangleStream< GSOutput > output
+	point GS_IN input[1] : SV_POSITION, 
+	inout TriangleStream<GS_OUT> output
 )
 {
 	for (uint i = 0; i < 3; i++)

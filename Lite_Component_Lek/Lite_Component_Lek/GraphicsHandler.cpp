@@ -187,6 +187,7 @@ void GraphicsHandler::setupView(int width, int height)
 void GraphicsHandler::setVP(ID3D11Buffer* vp)
 {
 	this->mContext->VSSetConstantBuffers(0, 1, &vp);
+	this->mContext->GSSetConstantBuffers(0, 1, &vp);
 }
 
 void GraphicsHandler::clear()
@@ -229,7 +230,18 @@ void GraphicsHandler::render(Entity* entity)
 
 void GraphicsHandler::renderParticles(Entity* entity)
 {
+	this->mShaderHandler.setShaders(this->mParticleSetup.vs, this->mParticleSetup.gs, this->mParticleSetup.ps, this->mContext);
 
+	UINT stride = sizeof(Vertex), offset = 0;
+
+	ParticleEmitter* emitter = dynamic_cast<ParticleEmitter*>(entity->getComponent(ComponentID::particleEmitter));
+	ID3D11Buffer* temp = emitter->getBuffer();
+
+	this->mContext->RSSetViewports(1, &this->mView);
+	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, this->mDSV);
+	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	this->mContext->IASetVertexBuffers(0, 1, &temp, &stride, &offset);
+	this->mContext->Draw(emitter->getNrOfParticles(), 0);
 }
 
 void GraphicsHandler::present()
