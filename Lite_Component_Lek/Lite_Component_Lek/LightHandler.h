@@ -4,6 +4,7 @@
 #include "PointLight.h"
 #include <vector>
 
+//This class is weird but works. Don't argue
 class LightHandler
 {
 private:

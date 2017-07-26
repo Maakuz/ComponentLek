@@ -25,6 +25,12 @@
     <Filter Include="Header Files\Graphics">
       <UniqueIdentifier>{1cee9d08-d10f-4604-8b53-f67d3e2295c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Entity Shaders">
+      <UniqueIdentifier>{9a91aaa3-584f-41e8-8e85-3dde1ea9b7fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Particle Shaders">
+      <UniqueIdentifier>{717ffb16-92a3-4d31-8df9-757b5a368d54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -79,6 +85,15 @@
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>Source Files\components</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EasyBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,22 +152,40 @@
     <ClInclude Include="Component.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EasyBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="ParticleVS.hlsl">
+      <Filter>Resource Files\Particle Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleGS.hlsl">
+      <Filter>Resource Files\Particle Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlePS.hlsl">
+      <Filter>Resource Files\Particle Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PixelShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="VertexShaderTransform.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Entity Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PixelShaderLight.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Entity Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Resource Files\Entity Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShaderTransform.hlsl">
+      <Filter>Resource Files\Entity Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

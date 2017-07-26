@@ -1,7 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 #include "Component.h"
-#include "D3DHeader.h"
+#include "EasyBuffer.h"
 #include <vector>
 
 struct Vertex
@@ -14,7 +14,7 @@ struct Vertex
 class Mesh : public Component
 {
 private:
-	ID3D11Buffer* mVertexBuffer;
+	EasyBuffer mVertexBuffer;
 	int mNrOfVertices;
 
 public:

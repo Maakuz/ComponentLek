@@ -12,7 +12,8 @@ enum ComponentID
 	directionalLight = 6,
 	pointLight = 7,
 	collisionBox = 8,
-	gravity = 9
+	gravity = 9,
+	particleEmitter = 10
 };
 
 class Component

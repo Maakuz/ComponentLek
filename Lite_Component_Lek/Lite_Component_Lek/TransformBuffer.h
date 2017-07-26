@@ -1,13 +1,13 @@
 #ifndef TRANSFORMBUFFER_H
 #define TRANSFORMBUFFER_H
 #include "Component.h"
-#include "D3DHeader.h"
+#include "EasyBuffer.h"
 #include "SimpleMath.h"
 
 class TransformBuffer : public Component
 {
 private:
-	ID3D11Buffer* mBuffer;
+	EasyBuffer mBuffer;
 	DirectX::SimpleMath::Matrix mTransform;
 
 public:

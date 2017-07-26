@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 #include "Component.h"
-#include "D3DHeader.h"
+#include "EasyBuffer.h"
 #include "SimpleMath.h"
 
 #define _USE_MATH_DEFINES
@@ -25,7 +25,7 @@ private:
 	float mYaw;
 	VPStruct mVP;
 
-	ID3D11Buffer* mVPBuffer;
+	EasyBuffer mVPBuffer;
 
 public:
 	Camera(int width = 0, int height = 0);

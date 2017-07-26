@@ -5,8 +5,6 @@ Camera::Camera(int width, int height) : Component(ComponentID::camera)
 {
 	float angle = 0.5f * M_PI;
 
-	this->mVPBuffer = nullptr;
-
 	this->mPos = Vector3(-10, 10, 0);
 	this->mForward = Vector3(0.5f, -0.5f, 0);
 	this->mRight = Vector3(0, 0, 1);
@@ -25,7 +23,7 @@ Camera::Camera(int width, int height) : Component(ComponentID::camera)
 
 Camera::~Camera()
 {
-	this->mVPBuffer->Release();
+	
 }
 
 void Camera::updateCamera(ID3D11DeviceContext* context)
@@ -38,33 +36,17 @@ void Camera::updateCamera(ID3D11DeviceContext* context)
 		this->mVP.view = view;
 		Matrix VP = this->mVP.projection * this->mVP.view;
 
-		D3D11_MAPPED_SUBRESOURCE data;
-
-		context->Map(this->mVPBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &data);
-
-		memcpy(data.pData, &VP, sizeof(VP));
-
-		context->Unmap(this->mVPBuffer, 0);
+		this->mVPBuffer.updateBuffer(sizeof(VP), &VP, context);
 	}
-
-
 }
 
 ID3D11Buffer* Camera::getBuffer()
 {
-	return this->mVPBuffer;
+	return this->mVPBuffer.getBuffer();
 }
 
 HRESULT Camera::setupBuffer(ID3D11Device* device)
 {
-	D3D11_BUFFER_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(Matrix);
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-
 	//Backwards because right to left
 	Matrix VP =  this->mVP.projection * this->mVP.view;
 
@@ -72,9 +54,7 @@ HRESULT Camera::setupBuffer(ID3D11Device* device)
 	ZeroMemory(&data, sizeof(data));
 	data.pSysMem = &VP;
 
-	HRESULT hr = device->CreateBuffer(&desc, &data, &this->mVPBuffer);
-
-	return hr;
+	return this->mVPBuffer.setupConstantBuffer(sizeof(Matrix), data, true, device);
 }
 
 void Camera::setForward(DirectX::SimpleMath::Vector3 forward)
