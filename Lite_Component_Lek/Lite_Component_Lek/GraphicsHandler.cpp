@@ -237,7 +237,7 @@ void GraphicsHandler::renderParticles(Entity* entity)
 {
 	this->mShaderHandler.setShaders(this->mParticleSetup.vs, this->mParticleSetup.gs, this->mParticleSetup.ps, this->mContext);
 
-	UINT stride = sizeof(Vertex), offset = 0;
+	UINT stride = sizeof(Particle), offset = 0;
 
 	ParticleEmitter* emitter = dynamic_cast<ParticleEmitter*>(entity->getComponent(ComponentID::particleEmitter));
 	ID3D11Buffer* temp = emitter->getBuffer();

@@ -34,7 +34,7 @@ int ShaderHandler::setupVertexShader(ID3D11Device* device, wchar_t* name, char* 
 	HRESULT hr;
 	int returnVal = -1;
 
-	hr = D3DCompileFromFile(name, nullptr, nullptr, entrypoint, "vs_5_0", 0, 0, &blob, nullptr);
+	hr = D3DCompileFromFile(name, nullptr, nullptr, entrypoint, "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &blob, nullptr);
 
 	if (SUCCEEDED(hr))
 	{
