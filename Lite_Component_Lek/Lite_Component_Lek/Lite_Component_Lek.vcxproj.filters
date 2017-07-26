@@ -181,5 +181,14 @@
     <FxCompile Include="VertexShaderTransform.hlsl">
       <Filter>Resource Files\Entity Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="ParticleCS.hlsl">
+      <Filter>Resource Files\Particle Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleInjector.hlsl">
+      <Filter>Resource Files\Particle Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleComputeVS.hlsl">
+      <Filter>Resource Files\Particle Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ GraphicsHandler::GraphicsHandler()
 	this->mDebugDevice = nullptr;
 	this->mDevice = nullptr;
 	this->mSwapChain = nullptr;
+	this->nullUAV = nullptr;
 }
 
 GraphicsHandler::~GraphicsHandler()
@@ -18,6 +19,12 @@ GraphicsHandler::~GraphicsHandler()
 	this->mDSS->Release();
 	this->mDSV->Release();
 
+	this->UAVS[0]->Release();
+	this->UAVS[1]->Release();
+	this->SRVS[0]->Release();
+	this->SRVS[1]->Release();
+	this->particleCountBuffer->Release();
+	this->IndirectArgsBuffer->Release();
 
 
 	//this->mDebugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
@@ -107,7 +114,7 @@ void GraphicsHandler::setupShaders()
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	mParticleSetup.vs = mShaderHandler.setupVertexShader(this->mDevice, L"ParticleVS.hlsl", "main", particleDesc, ARRAYSIZE(particleDesc));
+	mParticleSetup.vs = mShaderHandler.setupVertexShader(this->mDevice, L"ParticleComputeVS.hlsl", "main", particleDesc, ARRAYSIZE(particleDesc));
 	if (mParticleSetup.vs == -1)
 		exit(-2);
 
@@ -118,6 +125,14 @@ void GraphicsHandler::setupShaders()
 	mParticleSetup.ps = mShaderHandler.setupPixelShader(this->mDevice, L"ParticlePS.hlsl", "main");
 	if (mParticleSetup.ps == -1)
 		exit(-3);
+
+	mParticleCS.updater = mShaderHandler.setupComputeShader(this->mDevice, L"ParticleCS.hlsl", "main");
+	if (mParticleCS.updater == -1)
+		exit(-5);
+
+	mParticleCS.injector = mShaderHandler.setupComputeShader(this->mDevice, L"ParticleInjector.hlsl", "main");
+	if (mParticleCS.injector == -1)
+		exit(-5);
 }
 
 void GraphicsHandler::setupLightHandler()
@@ -195,6 +210,195 @@ void GraphicsHandler::setCamPos(ID3D11Buffer* pos)
 	this->mContext->GSSetConstantBuffers(1, 1, &pos);
 }
 
+void GraphicsHandler::createParticleBuffers(int nrOfParticles)
+{
+	Particle* particles = new Particle[nrOfParticles];
+	ZeroMemory(particles, sizeof(Particle) * nrOfParticles);
+
+	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&data, sizeof(D3D11_SUBRESOURCE_DATA));
+	float tempo;
+	data.pSysMem = &tempo;
+
+	this->mDeltaTimeBuffer.setupConstantBuffer(16, data, true, this->mDevice);
+
+	data.pSysMem = particles;
+
+	D3D11_BUFFER_DESC desc;
+	ZeroMemory(&desc, sizeof(D3D11_BUFFER_DESC));
+
+	desc.ByteWidth = nrOfParticles * sizeof(Particle);
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	desc.StructureByteStride = sizeof(Particle);
+
+	ID3D11Buffer* structBuffer1 = nullptr;
+	ID3D11Buffer* structBuffer2 = nullptr;
+
+	this->mDevice->CreateBuffer(&desc, &data, &structBuffer1);
+	this->mDevice->CreateBuffer(&desc, &data, &structBuffer2);
+
+	delete[] particles;
+
+	D3D11_BUFFER_UAV uav;
+
+	uav.FirstElement = 0;
+	uav.NumElements = nrOfParticles;
+	uav.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	ZeroMemory(&uavDesc, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC));
+
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer = uav;
+
+	D3D11_BUFFER_SRV srv;
+	ZeroMemory(&srv, sizeof(D3D11_BUFFER_SRV));
+	srv.FirstElement = 0;
+	srv.NumElements = nrOfParticles;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ZeroMemory(&srvDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	srvDesc.Buffer = srv;
+
+	this->mDevice->CreateUnorderedAccessView(structBuffer1, &uavDesc, &this->UAVS[0]);
+	this->mDevice->CreateShaderResourceView(structBuffer1, &srvDesc, &this->SRVS[0]);
+
+	//uav and srv for second buffer
+	this->mDevice->CreateUnorderedAccessView(structBuffer2, &uavDesc, &this->UAVS[1]);
+	this->mDevice->CreateShaderResourceView(structBuffer2, &srvDesc, &this->SRVS[1]);
+	
+	structBuffer1->Release();
+	structBuffer2->Release();
+
+	//this is for the indirect args buffer. For  constant buffer only first value is relevant rest is padding.
+	//0: nr of verticies
+	//1: nr of instances
+	//2: start vertex
+	//3: start instance
+	//4: padding
+	UINT* init = new UINT[5];
+	init[0] = 0;
+	init[1] = 0;
+	init[2] = 0;
+	init[3] = 0;
+	init[4] = 0;
+
+	//create constant buffer who holds the nr of particles
+	D3D11_BUFFER_DESC nrBDesc;
+	ZeroMemory(&nrBDesc, sizeof(D3D11_BUFFER_DESC));
+	nrBDesc.ByteWidth = 4 * sizeof(UINT);
+	nrBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	nrBDesc.Usage = D3D11_USAGE_DEFAULT;
+
+
+	data.pSysMem = init;
+
+	this->mDevice->CreateBuffer(&nrBDesc, &data, &this->particleCountBuffer);
+
+	//create indirect argument buffer used for the drawIndirect call
+	D3D11_BUFFER_DESC inDesc;
+	ZeroMemory(&inDesc, sizeof(D3D11_BUFFER_DESC));
+	inDesc.ByteWidth = 5 * sizeof(UINT);
+	inDesc.Usage = D3D11_USAGE_DEFAULT;
+	inDesc.MiscFlags = D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
+
+	//sets nr of instances
+	init[1] = 1;
+
+
+	this->mDevice->CreateBuffer(&inDesc, &data, &this->IndirectArgsBuffer);
+
+	delete[] init;
+}
+
+void GraphicsHandler::initParticles()
+{
+	this->mContext->CSSetUnorderedAccessViews(0, 1, &this->UAVS[0], 0);
+	this->mContext->CSSetUnorderedAccessViews(1, 1, &this->UAVS[1], 0);
+	this->mContext->CSSetConstantBuffers(1, 1, &this->particleCountBuffer);
+
+	this->mShaderHandler.setCS(this->mParticleCS.injector, this->mContext);
+
+	this->mContext->Dispatch(1, 1, 1);
+	this->mContext->CopyStructureCount(this->particleCountBuffer, 0, this->UAVS[0]);
+
+	this->mContext->CSSetUnorderedAccessViews(0, 1, &this->nullUAV, 0);
+	this->mContext->CSSetUnorderedAccessViews(1, 1, &this->nullUAV, 0);
+}
+
+void GraphicsHandler::updateDeltaTimeBuffer(float dt)
+{
+	this->mDeltaTimeBuffer.updateBuffer(4, &dt, this->mContext);
+}
+
+void GraphicsHandler::injectParticles(ParticleEmitter* emitter)
+{
+	//TODO: UPPER CAP
+	ID3D11Buffer* temp = emitter->getBuffer();
+	UINT UAVFLAG = -1;
+
+	this->mContext->CSSetConstantBuffers(0, 1, &temp);
+	this->mContext->CSSetUnorderedAccessViews(0, 1, &this->UAVS[0], &UAVFLAG);
+	this->mContext->CSSetConstantBuffers(1, 1, &this->particleCountBuffer);
+
+	this->mShaderHandler.setCS(this->mParticleCS.injector, this->mContext);
+
+	this->mContext->Dispatch(1, 1, 1);
+	this->mContext->CopyStructureCount(this->particleCountBuffer, 0, this->UAVS[0]);
+
+	this->mContext->CSSetUnorderedAccessViews(0, 1, &this->nullUAV, &UAVFLAG);
+	this->mContext->CSSetUnorderedAccessViews(1, 1, &this->nullUAV, &UAVFLAG);
+}
+
+void GraphicsHandler::updateParticles()
+{
+	UINT UAVFLAG = -1;
+
+	ID3D11Buffer* temp = this->mDeltaTimeBuffer.getBuffer();
+
+	this->mContext->CSSetConstantBuffers(0, 1, &this->particleCountBuffer);
+	this->mContext->CSSetConstantBuffers(1, 1, &temp);
+
+	this->mContext->CSSetUnorderedAccessViews(0, 1, &this->UAVS[0], &UAVFLAG);
+	this->mContext->CSSetUnorderedAccessViews(1, 1, &this->UAVS[1], 0);
+
+	this->mShaderHandler.setCS(this->mParticleCS.updater, this->mContext);
+
+
+	this->mContext->Dispatch(1, 1, 1);
+
+	this->swapParticleBuffers();
+
+
+	this->mContext->CopyStructureCount(this->particleCountBuffer, 0, this->UAVS[0]);
+	this->mContext->CopyStructureCount(this->IndirectArgsBuffer, 0, this->UAVS[0]);
+
+	this->mContext->CSSetUnorderedAccessViews(0, 1, &this->nullUAV, &UAVFLAG);
+	this->mContext->CSSetUnorderedAccessViews(1, 1, &this->nullUAV, &UAVFLAG);
+}
+
+void GraphicsHandler::swapParticleBuffers()
+{
+	ID3D11UnorderedAccessView *tempUAV;
+	ID3D11ShaderResourceView *tempSRV;
+	tempUAV = this->UAVS[0];
+	tempSRV = this->SRVS[0];
+
+	this->UAVS[0] = this->UAVS[1];
+	this->SRVS[0] = this->SRVS[1];
+
+	this->UAVS[1] = tempUAV;
+	this->SRVS[1] = tempSRV;
+
+	tempSRV = nullptr;
+	tempUAV = nullptr;
+
+}
+
 void GraphicsHandler::clear()
 {
 	float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -247,6 +451,24 @@ void GraphicsHandler::renderParticles(Entity* entity)
 	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	this->mContext->IASetVertexBuffers(0, 1, &temp, &stride, &offset);
 	this->mContext->Draw(emitter->getNrOfParticles(), 0);
+}
+
+void GraphicsHandler::renderParticlesGPU()
+{
+	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	this->mContext->RSSetViewports(1, &this->mView);
+
+	this->mShaderHandler.setShaders(this->mParticleSetup.vs, this->mParticleSetup.gs, this->mParticleSetup.ps, this->mContext);
+	this->mContext->IASetInputLayout(nullptr);
+	this->mContext->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+
+	this->mContext->VSSetShaderResources(0, 1, &this->SRVS[0]);
+
+
+	this->mContext->OMSetRenderTargets(1, &this->mBackBufferRTV, this->mDSV);
+
+	this->mContext->DrawInstancedIndirect(this->IndirectArgsBuffer, 0);
 }
 
 void GraphicsHandler::present()

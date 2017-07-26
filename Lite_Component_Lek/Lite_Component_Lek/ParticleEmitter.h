@@ -11,22 +11,20 @@
 struct Particle
 {
 	DirectX::SimpleMath::Vector3 pos;
-	DirectX::SimpleMath::Vector3 color;
-};
-
-struct ParticleInfo
-{
 	DirectX::SimpleMath::Vector3 velocity;
+	DirectX::SimpleMath::Vector3 color;
 	float lifeTime;
 };
+
+
 
 class ParticleEmitter : public Component
 {
 private:
 	std::vector<Particle> mParticles;
-	std::vector<ParticleInfo> mParticleInfos;
-	EasyBuffer mBuffer;
 	DirectX::SimpleMath::Vector3 mPos;
+
+	EasyBuffer mEmitterBuffer;
 
 public:
 	ParticleEmitter(DirectX::SimpleMath::Vector3 pos = DirectX::SimpleMath::Vector3(0, 0, 0));

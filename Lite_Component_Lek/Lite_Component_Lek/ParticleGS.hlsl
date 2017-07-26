@@ -1,6 +1,6 @@
 struct GS_IN
 {
-	float4 pos : SV_POSITION;
+    float4 pos : POSITION;
 	float3 color : COLOR;
 };
 

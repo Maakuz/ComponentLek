@@ -8,6 +8,9 @@ Game::Game(GraphicsHandler* gHandler)
 	gHandler->setupLightHandler();
 	gHandler->setupView(1280, 720);
 
+	gHandler->createParticleBuffers(512);
+	gHandler->initParticles();
+
 	this->camOffset = DirectX::SimpleMath::Vector3(-10, 5, 0);
 
 	this->createPlayer();
@@ -16,6 +19,7 @@ Game::Game(GraphicsHandler* gHandler)
 	
 	this->mEntities.push_back(player);
 	this->mEntities.push_back(cameraEntity);
+
 }
 
 Game::~Game()
@@ -190,7 +194,7 @@ void Game::update(float deltaTime)
 			emitter->setPosition(pos->getPosition());
 			emitter->update(deltaTime, this->mGraphicsHandler->getDeviceContext());
 
-			emitter->createShape(this->mGraphicsHandler->getDeviceContext());
+			this->mGraphicsHandler->injectParticles(emitter);
 		}
 	}
 
@@ -201,7 +205,8 @@ void Game::update(float deltaTime)
 
 	camPos->setPosition(playerPos->getPosition() + this->camOffset);
 
-
+	this->mGraphicsHandler->updateDeltaTimeBuffer(deltaTime);
+	this->mGraphicsHandler->updateParticles();
 }
 
 void Game::draw()
@@ -219,11 +224,9 @@ void Game::draw()
 			this->mGraphicsHandler->render(this->mEntities[i]);
 	}
 
-	for (size_t i = 0; i < this->mEntities.size(); i++)
-	{
-		if (this->mEntities[i]->hasComponent(ComponentID::particleEmitter))
-			this->mGraphicsHandler->renderParticles(this->mEntities[i]);
-	}
+	//TODO: FIX
+	//this->mGraphicsHandler->renderParticlesGPU();
+
 
 	this->mGraphicsHandler->present();
 }
