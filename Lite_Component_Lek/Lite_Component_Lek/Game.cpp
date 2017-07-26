@@ -191,19 +191,20 @@ void Game::draw()
 {
 	this->mGraphicsHandler->clear();
 
-	for (int i = 0; i < this->mEntities.size(); i++)
-	{
-		if (this->mEntities[i]->hasComponent(ComponentID::camera))
-		{
-			Camera* cam = dynamic_cast<Camera*>(this->mEntities[i]->getComponent(ComponentID::camera));
-			this->mGraphicsHandler->setVP(cam->getBuffer());
-		}
-	}
+
+	Camera* cam = dynamic_cast<Camera*>(this->cameraEntity->getComponent(ComponentID::camera));
+	this->mGraphicsHandler->setVP(cam->getBuffer());
 
 	for (int i = 0; i < this->mEntities.size(); i++)
 	{
 		if (this->mEntities[i]->hasComponent(ComponentID::mesh))
 			this->mGraphicsHandler->render(this->mEntities[i]);
+	}
+
+	for (size_t i = 0; i < this->mEntities.size(); i++)
+	{
+		if (this->mEntities[i]->hasComponent(ComponentID::particleEmitter))
+			this->mGraphicsHandler->renderParticles(this->mEntities[i]);
 	}
 
 	this->mGraphicsHandler->present();

@@ -22,8 +22,9 @@ private:
 
 	ShaderHandler mShaderHandler;
 
-	struct shaderSetup { int vs; int vsTransform; int gs; int ps; int psLight; };
-	shaderSetup mEntitySetup;
+	struct ShaderSetup { int vs; int vsTransform; int gs; int ps; int psLight; };
+	ShaderSetup mEntitySetup;
+	ShaderSetup mParticleSetup;
 
 public:
 	GraphicsHandler();
@@ -38,6 +39,7 @@ public:
 
 	void clear();
 	void render(Entity* entity);
+	void renderParticles(Entity* entity);
 	void present();
 
 	ID3D11Device* getDevice();

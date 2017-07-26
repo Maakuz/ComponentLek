@@ -17,7 +17,7 @@ public:
 	virtual ~ShaderHandler();
 
 	int setupVertexShader(ID3D11Device* device, wchar_t* name, char* entrypoint, D3D11_INPUT_ELEMENT_DESC* desc, UINT nrOfElements);
-	int setupGeometryShader();
+	int setupGeometryShader(ID3D11Device* device, wchar_t* name, char* entrypoint);
 	int setupPixelShader(ID3D11Device* device, wchar_t* name, char* entrypoint);
 
 	void setShaders(int vs, int gs, int ps, ID3D11DeviceContext* context);

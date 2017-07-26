@@ -98,6 +98,26 @@ void GraphicsHandler::setupShaders()
 	mEntitySetup.psLight = mShaderHandler.setupPixelShader(this->mDevice, L"PixelShaderLight.hlsl", "main");
 	if (mEntitySetup.psLight == -1)
 		exit(-3);
+
+
+	//Particle shaders
+	D3D11_INPUT_ELEMENT_DESC particleDesc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	mParticleSetup.vs = mShaderHandler.setupVertexShader(this->mDevice, L"ParticleVS.hlsl", "main", particleDesc, ARRAYSIZE(particleDesc));
+	if (mParticleSetup.vs == -1)
+		exit(-2);
+
+	mParticleSetup.gs = mShaderHandler.setupGeometryShader(this->mDevice, L"ParticleGS.hlsl", "main");
+	if (mParticleSetup.gs == -1)
+		exit(-4);
+
+	mParticleSetup.ps = mShaderHandler.setupPixelShader(this->mDevice, L"ParticlePS.hlsl", "main");
+	if (mParticleSetup.ps == -1)
+		exit(-3);
 }
 
 void GraphicsHandler::setupLightHandler()
@@ -205,6 +225,11 @@ void GraphicsHandler::render(Entity* entity)
 	this->mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	this->mContext->IASetVertexBuffers(0, 1, &temp, &stride, &offset);
 	this->mContext->Draw(mesh->getNrOfVertices(), 0);
+}
+
+void GraphicsHandler::renderParticles(Entity* entity)
+{
+
 }
 
 void GraphicsHandler::present()

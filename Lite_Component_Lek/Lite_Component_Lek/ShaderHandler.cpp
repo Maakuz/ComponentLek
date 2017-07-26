@@ -64,10 +64,35 @@ int ShaderHandler::setupVertexShader(ID3D11Device* device, wchar_t* name, char* 
 	return returnVal;
 }
 
-int ShaderHandler::setupGeometryShader()
+int ShaderHandler::setupGeometryShader(ID3D11Device * device, wchar_t * name, char * entrypoint)
 {
-	//FIX WHEN I NEED ONE
-	return 0;
+	ID3DBlob* blob = nullptr;
+	HRESULT hr;
+	int returnVal = -1;
+	//REMOVE DEBUG WHEN DONE
+	hr = D3DCompileFromFile(
+		name, nullptr, nullptr, entrypoint, "gs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &blob, nullptr);
+
+	if (SUCCEEDED(hr))
+	{
+		ID3D11GeometryShader* geometryShader;
+		hr = device->CreateGeometryShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &geometryShader);
+
+		if (SUCCEEDED(hr))
+		{
+			this->mGeometryShaders.push_back(geometryShader);
+			blob->Release();
+
+
+			returnVal = this->mGeometryShaders.size() - 1;
+		}
+
+	}
+
+	if (blob)
+		blob->Release();
+
+	return returnVal;
 }
 
 int ShaderHandler::setupPixelShader(ID3D11Device* device, wchar_t* name, char* entrypoint)
