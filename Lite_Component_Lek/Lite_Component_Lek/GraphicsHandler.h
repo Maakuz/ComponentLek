@@ -37,6 +37,7 @@ public:
 	void setupDepthStencil();
 	void setupView(int width, int height);
 	void setVP(ID3D11Buffer* vp);
+	void setCamPos(ID3D11Buffer* pos);
 
 	void clear();
 	void render(Entity* entity);

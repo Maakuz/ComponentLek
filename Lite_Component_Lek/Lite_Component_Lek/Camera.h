@@ -26,6 +26,7 @@ private:
 	VPStruct mVP;
 
 	EasyBuffer mVPBuffer;
+	EasyBuffer mPosBuffer;
 
 public:
 	Camera(int width = 0, int height = 0);
@@ -33,6 +34,7 @@ public:
 
 	void updateCamera(ID3D11DeviceContext* context);
 	ID3D11Buffer* getBuffer();
+	ID3D11Buffer* getPosBuffer();
 
 	HRESULT setupBuffer(ID3D11Device* device);
 

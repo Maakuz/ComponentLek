@@ -190,6 +190,11 @@ void GraphicsHandler::setVP(ID3D11Buffer* vp)
 	this->mContext->GSSetConstantBuffers(0, 1, &vp);
 }
 
+void GraphicsHandler::setCamPos(ID3D11Buffer* pos)
+{
+	this->mContext->GSSetConstantBuffers(1, 1, &pos);
+}
+
 void GraphicsHandler::clear()
 {
 	float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};

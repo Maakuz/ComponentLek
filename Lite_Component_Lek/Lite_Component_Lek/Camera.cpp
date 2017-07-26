@@ -37,12 +37,18 @@ void Camera::updateCamera(ID3D11DeviceContext* context)
 		Matrix VP = this->mVP.projection * this->mVP.view;
 
 		this->mVPBuffer.updateBuffer(sizeof(VP), &VP, context);
+		this->mPosBuffer.updateBuffer(sizeof(float) * 3, &this->mPos, context);
 	}
 }
 
 ID3D11Buffer* Camera::getBuffer()
 {
 	return this->mVPBuffer.getBuffer();
+}
+
+ID3D11Buffer* Camera::getPosBuffer()
+{
+	return this->mPosBuffer.getBuffer();
 }
 
 HRESULT Camera::setupBuffer(ID3D11Device* device)
@@ -54,7 +60,14 @@ HRESULT Camera::setupBuffer(ID3D11Device* device)
 	ZeroMemory(&data, sizeof(data));
 	data.pSysMem = &VP;
 
-	return this->mVPBuffer.setupConstantBuffer(sizeof(Matrix), data, true, device);
+	HRESULT hr = this->mVPBuffer.setupConstantBuffer(sizeof(Matrix), data, true, device);
+
+	data.pSysMem = &this->mPos;
+
+	if (SUCCEEDED(hr))
+		hr = this->mPosBuffer.setupConstantBuffer(sizeof(float) * 4, data, true, device);
+
+	return hr;
 }
 
 void Camera::setForward(DirectX::SimpleMath::Vector3 forward)

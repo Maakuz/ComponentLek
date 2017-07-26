@@ -194,6 +194,7 @@ void Game::draw()
 
 	Camera* cam = dynamic_cast<Camera*>(this->cameraEntity->getComponent(ComponentID::camera));
 	this->mGraphicsHandler->setVP(cam->getBuffer());
+	this->mGraphicsHandler->setCamPos(cam->getPosBuffer());
 
 	for (int i = 0; i < this->mEntities.size(); i++)
 	{
