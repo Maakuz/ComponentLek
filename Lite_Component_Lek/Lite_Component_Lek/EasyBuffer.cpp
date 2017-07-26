@@ -50,7 +50,7 @@ bool EasyBuffer::setupVertexBuffer(UINT size, D3D11_SUBRESOURCE_DATA& data, bool
 
 	HRESULT hr = device->CreateBuffer(&desc, &data, &this->mBuffer);
 	if (FAILED(hr))
-		return false;
+		return false; 
 }
 
 void EasyBuffer::updateBuffer(UINT size, void* toCopy, ID3D11DeviceContext* context)

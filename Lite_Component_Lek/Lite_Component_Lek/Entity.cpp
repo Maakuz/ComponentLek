@@ -43,6 +43,8 @@ void Entity::addComponent(Component* component)
 	if (component->getId() == ComponentID::gravity)
 		assert(this->hasComponent(ComponentID::velocity));
 
+	if (component->getId() == ComponentID::particleEmitter)
+		assert(this->hasComponent(ComponentID::position));
 
 	this->mComponents[component->getId()] = component;
 }

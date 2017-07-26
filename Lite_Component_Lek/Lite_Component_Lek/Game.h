@@ -14,6 +14,7 @@
 #include "PointLight.h"
 #include "CollisionBox.h"
 #include "Gravity.h"
+#include "ParticleEmitter.h"
 
 class Game
 {

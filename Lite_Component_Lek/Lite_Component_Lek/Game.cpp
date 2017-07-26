@@ -36,6 +36,11 @@ void Game::createPlayer()
 	TransformBuffer* buf = new TransformBuffer();
 	buf->setupBuffer(this->mGraphicsHandler->getDevice());
 
+	ParticleEmitter* emitter = new ParticleEmitter;
+
+	emitter->setupBuffer(this->mGraphicsHandler->getDevice());
+	emitter->createShape(this->mGraphicsHandler->getDeviceContext());
+
 	this->player = new Entity;
 
 	this->player->addComponent(new Position);
@@ -43,6 +48,7 @@ void Game::createPlayer()
 	this->player->addComponent(playerMesh);
 	this->player->addComponent(vel);
 	this->player->addComponent(new KeyboardMovement(0.001, vel));
+	this->player->addComponent(emitter); 
 
 	//TODO: HITBOX
 }
@@ -174,6 +180,17 @@ void Game::update(float deltaTime)
 
 			vel->addYVelocity(-grav->getGravForce());
 
+		}
+
+		if (this->mEntities[i]->hasComponent(ComponentID::particleEmitter))
+		{
+			ParticleEmitter* emitter = dynamic_cast<ParticleEmitter*>(this->mEntities[i]->getComponent(ComponentID::particleEmitter));
+			Position* pos = dynamic_cast<Position*>(this->mEntities[i]->getComponent(ComponentID::position));
+
+			emitter->setPosition(pos->getPosition());
+			emitter->update(deltaTime, this->mGraphicsHandler->getDeviceContext());
+
+			emitter->createShape(this->mGraphicsHandler->getDeviceContext());
 		}
 	}
 
